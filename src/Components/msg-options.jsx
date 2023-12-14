@@ -22,7 +22,7 @@ export default function MsgOptions(props) {
   return (
     <div className={props.own ? "msg-options" : "friend-msg-options"}>
       <Box sx={{ display: "flex", alignItems: "center", textAlign: "center" }}>
-        <Tooltip title="Account settings">
+        <Tooltip title="Message options">
           <IconButton
             onClick={handleClick}
             size="small"

@@ -10,9 +10,10 @@ export default function Landing(props) {
       <header className="mb-auto"></header>
 
       <main className="px-3 landing-main mx-auto">
-        <h1>Whipers...</h1>
+        <h1>The Nook of Whispers...</h1>
         <p className="lead">
-          This is for chatting and talking ig. Write somethign good here later.
+          This is for chatting and talking ig. I will write something good here
+          later.
         </p>
 
         <div className="row">

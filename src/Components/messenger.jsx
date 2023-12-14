@@ -5,48 +5,52 @@ import AccountMenu from "./account-options";
 import { Avatar } from "@mui/material";
 import InputEmoji from "react-input-emoji";
 import CloseIcon from "@mui/icons-material/Close";
-// import { io } from "socket.io-client";
+import { io } from "socket.io-client";
 import Typing from "./typing";
+import InfiniteScroll from "react-infinite-scroller";
 
 export default function Messenger(props) {
-  // const socketRef = useRef();
+  const socketRef = useRef();
   const scrollRef = useRef();
 
   const [showTyping, setShowTyping] = useState(null);
-  // useEffect(() => {
-  //   socketRef.current = io("https://65.2.29.56:3000");
-  //   socketRef.current.on("getMessage", (message) => {
-  //     getMessages();
-  //   });
-  //   socketRef.current.on("deleteTheMessage", () => {
-  //     getMessages();
-  //   });
-  //   socketRef.current.on("showTheTyping", (id) => {
-  //     if (id.id === "") {
-  //       setShowTyping(null);
-  //     } else {
-  //       setShowTyping(id.id);
-  //     }
-  //   });
-  // }, []);
+  useEffect(() => {
+    console.log("connecting to socket");
+    socketRef.current = io("https://faithful-lopsided-mouth.glitch.me");
+    socketRef.current.on("getMessage", (message) => {
+      getMessages();
+    });
+    socketRef.current.on("deleteTheMessage", () => {
+      getMessages();
+    });
+    socketRef.current.on("showTheTyping", (id) => {
+      if (id.id === "") {
+        setShowTyping(null);
+      } else {
+        setShowTyping(id.id);
+        scrollRef?.current?.scrollIntoView({ behavior: "smooth" });
+      }
+    });
+  }, []);
   const [isReply, setIsReply] = useState({});
   const [messages, setMessages] = useState([]);
   const [friend, setFriend] = useState("");
   const [text, setText] = useState("");
-
+  const [page, setPage] = useState(2);
+  const [max, setMax] = useState(1);
+  // const [currentMessages, setCurrentMessages] = useState(0);
   // scrolling to the last message
   useEffect(() => {
     scrollRef?.current?.scrollIntoView({ behavior: "smooth" });
-  });
-
-  //getting messages every sometime
-  useEffect(() => {
-    const interval = setInterval(() => {
-      getMessages();
-    }, 5000);
-
-    return () => clearInterval(interval); // This represents the unmount function, in which you need to clear your interval to prevent memory leaks.
   }, []);
+  //getting messages every sometime
+
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     getMessagesFromScroll();
+  //   }, 3000);
+  //   return () => clearInterval(interval); // This represents the unmount function, in which you need to clear your interval to prevent memory leaks.
+  // }, []);
 
   //for settng height
   useEffect(() => {
@@ -81,31 +85,29 @@ export default function Messenger(props) {
   //for getting messages
   const getMessages = async () => {
     const res = await axios.get(
-      process.env.REACT_APP_API_ADRESS + "/get-messages"
+      process.env.REACT_APP_API_ADRESS + "/get-messages/" + page
     );
-    setMessages(res.data);
+    setMessages(res.data.messages);
+    setPage(page + 1);
   };
+  // const getMessagesFromScroll = async (fromScroll) => {
+  //   if (max !== messages.length) {
+  //     const res = await axios.get(
+  //       process.env.REACT_APP_API_ADRESS + "/get-messages/" + page
+  //     );
+  //     if (res.data.messages.length > messages.length) {
+  //       setMessages(res.data.messages);
+  //     }
+  //     if (fromScroll) {
+  //       setPage(page + 1);
+  //     }
+  //     setMax(res.data.max);
+  //   }
+  // };
+
   useEffect(() => {
     getMessages();
   }, []);
-
-  // useEffect(() => {
-  //   const getId = async () => {
-  //     try {
-  //       const res = await axios.get(
-  //         process.env.REACT_APP_API_ADRESS +
-  //           "/get-userid/" +
-  //           props.userLoggedIn?.email
-  //       );
-  //       setUserLoggedId(res.data.id);
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   };
-  //   getId();
-  // }, [props.userLoggedIn]);
-
-  //for getting friend
 
   useEffect(() => {
     const getFriend = async () => {
@@ -126,25 +128,27 @@ export default function Messenger(props) {
   //for sending messges
   const handleSendMessage = async (e) => {
     try {
-      if (e.target?.id === "send-box") {
-        e.preventDefault();
-      }
+      const data = new FormData(e.currentTarget);
       const reqData = {
-        text: text,
+        text: data.get("chatMessage"),
         read: false,
         reply: isReply,
         senderId: props.userLoggedIn?._id,
       };
-      const res = await axios.post(
-        process.env.REACT_APP_API_ADRESS + "/new-message",
-        reqData
-      );
-      if (res.status === 200) {
-        setIsReply({});
-        setText("");
-        getMessages();
-        // socketRef.current.emit("sendMessage", reqData);
-        // socketRef.current.emit("showTyping", { id: "" });
+      if (reqData.text !== "") {
+        e.preventDefault();
+        const res = await axios.post(
+          process.env.REACT_APP_API_ADRESS + "/new-message",
+          reqData
+        );
+        if (res.status === 200) {
+          setIsReply({});
+          document.getElementById("chatMessage").value = "";
+          // getMessages();
+          scrollRef?.current?.scrollIntoView({ behavior: "smooth" });
+          socketRef.current.emit("sendMessage", reqData);
+          socketRef.current.emit("showTyping", { id: "" });
+        }
       }
     } catch (error) {
       console.log(error);
@@ -156,9 +160,9 @@ export default function Messenger(props) {
       const res = await axios.get(
         process.env.REACT_APP_API_ADRESS + "/delete-message/" + id
       );
+      getMessages();
       if (res.status === 200) {
-        getMessages();
-        // socketRef.current.emit("deleteMessage");
+        socketRef.current.emit("deleteMessage");
       }
     } catch (error) {
       console.log(error);
@@ -166,13 +170,10 @@ export default function Messenger(props) {
   };
   const handleShowTyping = async (e) => {
     try {
-      setText(e);
-      if (e === "") {
-        // console.log("first");
-        // socketRef.current.emit("showTyping", { id: "" });
+      if (e.target.value === "") {
+        socketRef.current.emit("showTyping", { id: "" });
       } else {
-        // console.log("sec");
-        // socketRef.current.emit("showTyping", { id: props.userLoggedIn._id });
+        socketRef.current.emit("showTyping", { id: props.userLoggedIn._id });
       }
     } catch (error) {
       console.log(error);
@@ -213,29 +214,48 @@ export default function Messenger(props) {
                 </Avatar>
               </>
             )}
-            <span className="conv-name ms-3 mt-2 fw-bold">{friend.name}</span>
+            <span className="conv-name ms-3 mt-2 fw-bold dets">
+              {friend.name}
+            </span>
           </div>
           <div className="chat-top" id="chat">
-            {messages?.map((m) => {
-              return (
-                m && (
-                  <>
-                    <div ref={scrollRef}>
-                      <Message
-                        deleteMessage={deleteMessage}
-                        message={m}
-                        reply={handleIsReply}
-                        userLoggedIn={props.userLoggedIn}
-                        friend={friend}
-                        own={
-                          m?.senderId === props.userLoggedIn?._id ? true : false
-                        }
-                      />
-                    </div>
-                  </>
-                )
-              );
-            })}
+            <InfiniteScroll
+              pageStart={1}
+              loadMore={() => {
+                getMessages();
+              }}
+              hasMore={max !== messages.length}
+              loader={
+                <div className="loader" key={0}>
+                  Loading ...
+                </div>
+              }
+              isReverse={true}
+              useWindow={false}
+            >
+              {messages?.map((m) => {
+                return (
+                  m && (
+                    <>
+                      <div>
+                        <Message
+                          deleteMessage={deleteMessage}
+                          message={m}
+                          reply={handleIsReply}
+                          userLoggedIn={props.userLoggedIn}
+                          friend={friend}
+                          own={
+                            m?.senderId === props.userLoggedIn?._id
+                              ? true
+                              : false
+                          }
+                        />
+                      </div>
+                    </>
+                  )
+                );
+              })}
+            </InfiniteScroll>
             {showTyping ? (
               showTyping !== props.userLoggedIn._id && (
                 <div ref={scrollRef}>
@@ -269,13 +289,15 @@ export default function Messenger(props) {
             ) : (
               <></>
             )}
-            {/* <textarea
+            <textarea
               name="chatMessage"
               id="chatMessage"
               className="chat-message-input mx-2"
-              // onChange={handleShowTyping}
-            ></textarea> */}
-            <div className="chat-message-input">
+              onChange={(e) => {
+                handleShowTyping(e);
+              }}
+            ></textarea>
+            {/* <div className="chat-message-input mx-2">
               <InputEmoji
                 value={text}
                 onChange={(e) => {
@@ -285,8 +307,11 @@ export default function Messenger(props) {
                 onEnter={handleSendMessage}
                 placeholder="Type a message"
               />
-            </div>
-            <button className="chat-message-send btn rounded-3 btn-outline-light">
+            </div> */}
+            <button
+              className="chat-message-send btn rounded-3 btn-outline-light"
+              type="submit"
+            >
               Send
             </button>
           </form>

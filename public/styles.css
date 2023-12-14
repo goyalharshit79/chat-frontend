@@ -15,7 +15,7 @@
   bottom: 3vh !important;
 }
 .my-btn {
-  background-color: lightcoral !important;
+  background-color: #903838 !important;
   color: white !important;
 }
 .my-btn:hover {
@@ -190,6 +190,9 @@ a {
 .scroll-enable {
   overflow: auto !important;
 }
+.dets {
+  color: white !important;
+}
 #edit-details-modal {
   margin-top: 5rem !important;
 }
@@ -245,7 +248,7 @@ textarea {
   height: 10rem !important;
 }
 .cover-container {
-  background-color: lightcoral;
+  background-color: #903838;
   color: white;
 }
 .create-post-cl ose {
@@ -258,7 +261,7 @@ textarea {
   border-radius: 3.5rem;
   padding: 2rem;
   width: 80%;
-  background-color: lightcoral;
+  background-color: #903838;
   box-shadow: 5px 0.5rem 0.25rem rgba(0, 0, 0, 0.5);
 }
 
@@ -548,7 +551,7 @@ textarea {
   min-height: 6rem;
   max-height: fit-content;
   box-shadow: 0px 0.5rem 0.25rem rgba(0, 0, 0, 0.125);
-  background-color: lightcoral;
+  background-color: #903838;
 }
 
 /* making the onlien bagde */
@@ -706,14 +709,15 @@ textarea {
 .chat-bottom {
   align-items: center;
   justify-content: space-around;
-  background-color: lightcoral;
+  background-color: #903838;
 }
 .color-own {
-  border-color: lightcoral !important;
+  border-color: #903838 !important;
 }
 .chat-message-input {
-  width: 80%;
+  width: 70%;
   display: inline-block;
+  padding: 10px;
 }
 
 .reply-text {
@@ -727,8 +731,9 @@ textarea {
   cursor: default;
 }
 .chat-message-send {
-  /* margin-right: 5rem;
-  margin-top: 0rem; */
+  margin-right: 1.5rem;
+  margin-top: 0.75rem;
+  float: right;
 }
 
 .like-count {
@@ -755,19 +760,19 @@ textarea {
 }
 .my-input {
   border: 0 !important;
-  color: lightcoral !important;
+  color: #903838 !important;
 }
 .my-input:focus {
-  outline: lightcoral !important;
+  outline: #903838 !important;
   box-shadow: 0 0 0 0.25rem rgba(240, 128, 128, 0.25) !important;
 }
 .form-check-input:checked {
-  background-color: lightcoral !important;
+  background-color: #903838 !important;
   border-color: white !important;
 }
 .form-check-input {
   border: solid 2px !important;
-  border-color: lightcoral !important;
+  border-color: #903838 !important;
 }
 .modal {
   --bs-modal-border-color: transparent !important;
